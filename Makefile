@@ -23,9 +23,13 @@ INSTALL_DIR = AT
  
 CFLAGS := -g -O2
 CFLAGS  += -fPIC -DPIC -ffunction-sections -funwind-tables -fstack-protector
-CFLAGS  += -DMAIN_LOG_ONLY
+CFLAGS  += -DMAIN_LOG_ONLY 
+CFLAGS  += -DHAVE_PTHREADS
 
 CXXFLAGS= ${CFLAGS}
+CXXFLAGS+= -DADB_HOST=0
+CXXFLAGS+= -D_XOPEN_SOURCE
+CXXFLAGS+= -D_GNU_SOURCE
 
 LDFLAGS += -O2 -Bdirect -Wl,--hash-style=gnu
 
@@ -44,7 +48,11 @@ C_SRCS := \
 C_SRCS += \
 	$(LIBCUTILS_SRC_DIR)/properties.c \
 	$(LIBCUTILS_SRC_DIR)/socket_local_client.c \
-	
+	$(LIBCUTILS_SRC_DIR)/socket_local_server.c \
+	$(LIBCUTILS_SRC_DIR)/socket_loopback_client.c \
+	$(LIBCUTILS_SRC_DIR)/socket_inaddr_any_server.c \
+	$(LIBCUTILS_SRC_DIR)/socket_loopback_server.c \
+
 C_SRCS += \
 	$(LIBLOG_SRC_DIR)/event_tag_map.c \
 	$(LIBLOG_SRC_DIR)/fake_log_device.c \
@@ -57,7 +65,7 @@ C_SRCS += \
 S_SRCS := \
 	$(BIONIC_SRC_DIR)/libc/arch-arm/bionic/futex_arm.S \
 	
-ATBOX_SRC_DIR := source/toolbox
+ATBOX_SRC_DIR := toolbox
 ATBOX_LDFLAGS := -Wl,--gc-sections
 #LDFLAGS += --sysroot=$(NDK_SYSROOT) -DANDROID
 
@@ -75,24 +83,46 @@ S_OBJS := $(patsubst %.S, %.s.o,  $(S_SRCS))
 ATBOX_C_OBJS := $(patsubst %.c, %.c.o,  $(ATBOX_C_SRCS))
 ATBOX_S_OBJS := $(patsubst %.c, %.c.o,  $(ATBOX_S_SRCS))
 
+ADB_SRC_DIR := adb
+ADB_C_SRCS := \
+	$(ADB_SRC_DIR)/adb.c \
+	$(ADB_SRC_DIR)/fdevent.c \
+	$(ADB_SRC_DIR)/transport.c \
+	$(ADB_SRC_DIR)/transport_local.c \
+	$(ADB_SRC_DIR)/transport_usb.c \
+	$(ADB_SRC_DIR)/sockets.c \
+	$(ADB_SRC_DIR)/services.c \
+	$(ADB_SRC_DIR)/file_sync_service.c \
+	$(ADB_SRC_DIR)/jdwp_service.c \
+	$(ADB_SRC_DIR)/framebuffer_service.c \
+	$(ADB_SRC_DIR)/remount_service.c \
+	$(ADB_SRC_DIR)/usb_linux_client.c \
+	$(ADB_SRC_DIR)/log_service.c \
+	$(ADB_SRC_DIR)/utils.c \
+
+
+ADB_C_OBJS := $(patsubst %.c, %.c.o,  $(ADB_C_SRCS))
+ADB_S_OBJS := $(patsubst %.c, %.c.o,  $(ADB_S_SRCS))
 
 INCLUDES := -Iinclude 
 INCLUDES += -Isource/bionic/libc/include
 INCLUDES += -Isource/libcutils 
 
 INCLUDES += -Isource/bionic/libc/arch-arm/include
-
+INCLUDES += -Iadb 
 
 
 .PHONY: all clean install
 
-all: $(BUILD_LIB_DIR)/libat.so $(BUILD_BIN_DIR)/atbox $(BUILD_BIN_DIR)/logcat   
+all: $(BUILD_LIB_DIR)/libat.so $(BUILD_BIN_DIR)/atbox $(BUILD_BIN_DIR)/logcat $(BUILD_BIN_DIR)/adbd   
 
 clean:
 	@rm -Rf $(C_OBJS)
 	@rm -Rf $(S_OBJS)
 	@rm -Rf $(ATBOX_C_OBJS)
 	@rm -Rf $(ATBOX_S_OBJS)
+	@rm -Rf $(ADB_C_OBJS)
+	@rm -Rf $(ADB_S_OBJS)
 	@rm -Rf $(BUILD_BIN_DIR)
 	@rm -Rf $(BUILD_LIB_DIR)
 	@rm -Rf $(INSTALL_DIR)
@@ -102,7 +132,11 @@ $(BUILD_BIN_DIR)/atbox: $(BUILD_LIB_DIR)/libat.so $(ATBOX_C_OBJS) $(ATBOX_S_OBJS
 	@mkdir -p $(dir $@)
 	@$(GCC) $(ATBOX_LDFLAGS) -o $@ $(ATBOX_C_OBJS) $(ATBOX_S_OBJS) -L$(BUILD_LIB_DIR) ${LIBS} -lat
 	
-	
+$(BUILD_BIN_DIR)/adbd: $(BUILD_LIB_DIR)/libat.so $(ADB_C_OBJS) $(ADB_S_OBJS) 
+	@echo "BIN     $@"
+	@mkdir -p $(dir $@)
+	@$(GCC) $(ADB_LDFLAGS) -o $@ $(ADB_C_OBJS) $(ADB_S_OBJS) -L$(BUILD_LIB_DIR) ${LIBS} -lat
+
 $(BUILD_LIB_DIR)/libat.so: $(C_OBJS) $(S_OBJS)
 	@echo "LIB     $@"
 	@mkdir -p $(dir $@)
