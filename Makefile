@@ -21,8 +21,8 @@ INSTALL_DIR = AT
 #echo "GCC = $(GCC)"
 
  
-CFLAGS := -g -O2
-CFLAGS  += -fPIC -DPIC -ffunction-sections -funwind-tables -fstack-protector
+CFLAGS := -O2
+CFLAGS  += -fPIC -DPIC
 CFLAGS  += -DMAIN_LOG_ONLY 
 CFLAGS  += -DHAVE_PTHREADS
 
@@ -40,7 +40,7 @@ LIBCUTILS_SRC_DIR := source/libcutils
 LIBLOG_SRC_DIR := source/liblog
 BIONIC_SRC_DIR := source/bionic
 
-INCLUDE_DIR := ../include
+INCLUDE_DIR := include
 
 C_SRCS := \
 	source/at_sys.c
@@ -67,7 +67,6 @@ S_SRCS := \
 	
 ATBOX_SRC_DIR := toolbox
 ATBOX_LDFLAGS := -Wl,--gc-sections
-#LDFLAGS += --sysroot=$(NDK_SYSROOT) -DANDROID
 
 
 ATBOX_C_SRCS := \
@@ -84,6 +83,8 @@ ATBOX_C_OBJS := $(patsubst %.c, %.c.o,  $(ATBOX_C_SRCS))
 ATBOX_S_OBJS := $(patsubst %.c, %.c.o,  $(ATBOX_S_SRCS))
 
 ADB_SRC_DIR := adb
+ADB_LDFLAGS := -Wl,--gc-sections
+
 ADB_C_SRCS := \
 	$(ADB_SRC_DIR)/adb.c \
 	$(ADB_SRC_DIR)/fdevent.c \

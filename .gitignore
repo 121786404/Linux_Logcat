@@ -1,5 +1,5 @@
 *~
-.build
+/.build/*
 *.o
-adbd
 *.swp
+/AT/*
