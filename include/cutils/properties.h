@@ -17,6 +17,7 @@
 #ifndef __CUTILS_PROPERTIES_H
 #define __CUTILS_PROPERTIES_H
 
+#include "at_config.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

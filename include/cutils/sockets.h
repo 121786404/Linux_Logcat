@@ -17,6 +17,7 @@
 #ifndef __CUTILS_SOCKETS_H
 #define __CUTILS_SOCKETS_H
 
+#include "at_config.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>

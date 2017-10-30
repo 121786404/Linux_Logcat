@@ -17,6 +17,7 @@
 #ifndef _LIBS_CUTILS_THREADS_H
 #define _LIBS_CUTILS_THREADS_H
 
+#include "at_config.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

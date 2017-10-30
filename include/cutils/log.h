@@ -28,6 +28,7 @@
 #ifndef _LIBS_CUTILS_LOG_H
 #define _LIBS_CUTILS_LOG_H
 
+#include "at_config.h"
 #include <stdio.h>
 #include <time.h>
 #include <sys/types.h>

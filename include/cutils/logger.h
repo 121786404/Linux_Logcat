@@ -10,6 +10,7 @@
 #ifndef _UTILS_LOGGER_H
 #define _UTILS_LOGGER_H
 
+#include "at_config.h"
 #include <stdint.h>
 
 struct logger_entry {
