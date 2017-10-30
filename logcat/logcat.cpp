@@ -31,7 +31,7 @@ static int g_tail_lines = 0;
 /* logd prefixes records with a length field */
 #define RECORD_LENGTH_FIELD_SIZE_BYTES sizeof(uint32_t)
 
-#define LOG_FILE_DIR    "/dev/log/"
+#define LOG_FILE_DIR    "/dev/"
 
 
 struct queued_entry_t {
@@ -153,7 +153,7 @@ void printBinary(struct logger_entry *buf)
 {
     size_t size = sizeof(logger_entry) + buf->len;
     int ret;
-    
+
     do {
         ret = write(g_outFD, buf, size);
     } while (ret < 0 && errno == EINTR);
@@ -199,7 +199,7 @@ static void processBuffer(log_device_t* dev, struct logger_entry *buf)
 
     g_outByteCount += bytesWritten;
 
-    if (g_logRotateSizeKBytes > 0 
+    if (g_logRotateSizeKBytes > 0
         && (g_outByteCount / 1024) >= g_logRotateSizeKBytes
     ) {
         rotateLogs();
@@ -471,6 +471,7 @@ int main(int argc, char **argv)
 
     at_sys_init();
 
+
     g_logformat = android_log_format_new();
 
     if (argc == 2 && 0 == strcmp(argv[1], "--test")) {
@@ -493,7 +494,7 @@ int main(int argc, char **argv)
         }
 
         switch(ret) {
-            case 's': 
+            case 's':
                 // default to all silent
                 android_log_addFilterRule(g_logformat, "*:s");
             break;
@@ -551,8 +552,8 @@ int main(int argc, char **argv)
             break;
 
             case 'r':
-                if (optarg == NULL) {                
-                    android::g_logRotateSizeKBytes 
+                if (optarg == NULL) {
+                    android::g_logRotateSizeKBytes
                                 = DEFAULT_LOG_ROTATE_SIZE_KBYTES;
                 } else {
                     long logRotateSize;
@@ -676,7 +677,7 @@ int main(int argc, char **argv)
         }
     }
 
-    if (android::g_logRotateSizeKBytes != 0 
+    if (android::g_logRotateSizeKBytes != 0
         && android::g_outputFileName == NULL
     ) {
         fprintf(stderr,"-r requires -f as well\n");
@@ -693,7 +694,7 @@ int main(int argc, char **argv)
             err = setLogFormat(logFormat);
 
             if (err < 0) {
-                fprintf(stderr, "invalid format in ANDROID_PRINTF_LOG '%s'\n", 
+                fprintf(stderr, "invalid format in ANDROID_PRINTF_LOG '%s'\n",
                                     logFormat);
             }
         }
@@ -712,8 +713,8 @@ int main(int argc, char **argv)
         if (env_tags_orig != NULL) {
             err = android_log_addFilterString(g_logformat, env_tags_orig);
 
-            if (err < 0) { 
-                fprintf(stderr, "Invalid filter expression in" 
+            if (err < 0) {
+                fprintf(stderr, "Invalid filter expression in"
                                     " ANDROID_LOG_TAGS\n");
                 android::show_help(argv[0]);
                 exit(-1);
@@ -724,7 +725,7 @@ int main(int argc, char **argv)
         for (int i = optind ; i < argc ; i++) {
             err = android_log_addFilterString(g_logformat, argv[i]);
 
-            if (err < 0) { 
+            if (err < 0) {
                 fprintf (stderr, "Invalid filter expression '%s'\n", argv[i]);
                 android::show_help(argv[0]);
                 exit(-1);

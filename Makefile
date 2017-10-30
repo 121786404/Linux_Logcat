@@ -170,4 +170,5 @@ install:
 	@cp -Rf $(INCLUDE_DIR)/* $(INSTALL_DIR)/include
 	@cd ${INSTALL_DIR}/bin && ln -fs atbox setprop
 	@cd ${INSTALL_DIR}/bin && ln -fs atbox getprop
+	@tar -Jcf AT.tar.xz AT
 	

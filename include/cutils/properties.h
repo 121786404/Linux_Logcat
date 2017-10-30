@@ -18,9 +18,11 @@
 #define __CUTILS_PROPERTIES_H
 
 #include "at_config.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 /* System properties are *small* name value pairs managed by the
 ** property service.  If your data doesn't fit in the provided

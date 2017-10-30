@@ -3,3 +3,5 @@
 *.o
 *.swp
 /AT/*
+/si
+AT.tar.xz
