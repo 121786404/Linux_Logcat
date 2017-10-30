@@ -31,47 +31,9 @@
 #define _REALLY_INCLUDE_SYS__SYSTEM_PROPERTIES_H_
 #include <sys/_system_properties.h>
 
-static int send_prop_msg(prop_msg *msg)
-{
-    int s;
-    int r;
-    
-    s = socket_local_client(PROP_SERVICE_NAME, 
-                            ANDROID_SOCKET_NAMESPACE_RESERVED,
-                            SOCK_STREAM);
-    if(s < 0) return -1;
-    
-    while((r = send(s, msg, sizeof(prop_msg), 0)) < 0) {
-        if((errno == EINTR) || (errno == EAGAIN)) continue;
-        break;
-    }
-
-    if(r == sizeof(prop_msg)) {
-        r = 0;
-    } else {
-        r = -1;
-    }
-
-    close(s);
-    return r;
-}
-
 int property_set(const char *key, const char *value)
 {
-    prop_msg msg;
-    unsigned resp;
-
-    if(key == 0) return -1;
-    if(value == 0) value = "";
-    
-    if(strlen(key) >= PROP_NAME_MAX) return -1;
-    if(strlen(value) >= PROP_VALUE_MAX) return -1;
-    
-    msg.cmd = PROP_MSG_SETPROP;
-    strcpy((char*) msg.name, key);
-    strcpy((char*) msg.value, value);
-
-    return send_prop_msg(&msg);
+    return __system_property_set(key, value);
 }
 
 int property_get(const char *key, char *value, const char *default_value)
@@ -98,10 +60,13 @@ int property_list(void (*propfn)(const char *key, const char *value, void *cooki
     const prop_info *pi;
     unsigned n;
     
+
     for(n = 0; (pi = __system_property_find_nth(n)); n++) {
+
         __system_property_read(pi, name, value);
         propfn(name, value, cookie);
     }
+
     return 0;
 }
 
@@ -137,7 +102,7 @@ static int connectToServer(const char* fileName)
     
     sock = socket(AF_UNIX, SOCK_STREAM, 0);
     if (sock < 0) {
-        LOGW("UNIX domain socket create failed (errno=%d)\n", errno);
+        ALOGW("UNIX domain socket create failed (errno=%d)\n", errno);
         return -1;
     }
 
@@ -148,7 +113,7 @@ static int connectToServer(const char* fileName)
     if (cc < 0) {
         // ENOENT means socket file doesn't exist
         // ECONNREFUSED means socket exists but nobody is listening
-        //LOGW("AF_UNIX connect failed for '%s': %s\n",
+        //ALOGW("AF_UNIX connect failed for '%s': %s\n",
         //    fileName, strerror(errno));
         close(sock);
         return -1;
@@ -166,9 +131,9 @@ static void init(void)
 
     gPropFd = connectToServer(SYSTEM_PROPERTY_PIPE_NAME);
     if (gPropFd < 0) {
-        //LOGW("not connected to system property server\n");
+        //ALOGW("not connected to system property server\n");
     } else {
-        //LOGV("Connected to system property server\n");
+        //ALOGV("Connected to system property server\n");
     }
 }
 
@@ -178,7 +143,7 @@ int property_get(const char *key, char *value, const char *default_value)
     char recvBuf[1+PROPERTY_VALUE_MAX];
     int len = -1;
 
-    //LOGV("PROPERTY GET [%s]\n", key);
+    //ALOGV("PROPERTY GET [%s]\n", key);
 
     pthread_once(&gInitOnce, init);
     if (gPropFd < 0) {
@@ -227,12 +192,12 @@ int property_get(const char *key, char *value, const char *default_value)
         strcpy(value, recvBuf+1);
         len = strlen(value);
     } else {
-        LOGE("Got strange response to property_get request (%d)\n",
+        ALOGE("Got strange response to property_get request (%d)\n",
             recvBuf[0]);
         assert(0);
         return -1;
     }
-    //LOGV("PROP [found=%d def='%s'] (%d) [%s]: [%s]\n",
+    //ALOGV("PROP [found=%d def='%s'] (%d) [%s]: [%s]\n",
     //    recvBuf[0], default_value, len, key, value);
 
     return len;
@@ -245,7 +210,7 @@ int property_set(const char *key, const char *value)
     char recvBuf[1];
     int result = -1;
 
-    //LOGV("PROPERTY SET [%s]: [%s]\n", key, value);
+    //ALOGV("PROPERTY SET [%s]: [%s]\n", key, value);
 
     pthread_once(&gInitOnce, init);
     if (gPropFd < 0)
@@ -279,7 +244,7 @@ int property_set(const char *key, const char *value)
 int property_list(void (*propfn)(const char *key, const char *value, void *cookie), 
                   void *cookie)
 {
-    //LOGV("PROPERTY LIST\n");
+    //ALOGV("PROPERTY LIST\n");
     pthread_once(&gInitOnce, init);
     if (gPropFd < 0)
         return -1;
