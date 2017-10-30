@@ -1,5 +1,5 @@
 /* utils/logger.h
-** 
+**
 ** Copyright 2007, The Android Open Source Project
 **
 ** This file is dual licensed.  It may be redistributed and/or modified
@@ -45,10 +45,10 @@ struct logger_entry_v2 {
     char        msg[0];    /* the entry's payload */
 };
 
-#define LOGGER_LOG_MAIN		"log/main"
-#define LOGGER_LOG_RADIO	"log/radio"
-#define LOGGER_LOG_EVENTS	"log/events"
-#define LOGGER_LOG_SYSTEM	"log/system"
+#define LOGGER_LOG_MAIN		"log_main"
+#define LOGGER_LOG_RADIO	"log_radio"
+#define LOGGER_LOG_EVENTS	"log_events"
+#define LOGGER_LOG_SYSTEM	"log_system"
 
 /*
  * The maximum size of the log entry payload that can be
