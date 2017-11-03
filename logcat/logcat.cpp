@@ -311,8 +311,8 @@ static void readLogLines(log_device_t* devices)
                     dev->enqueue(entry);
                     ++queued_lines;
 
-                    if((ret = klogctl(9, buffer, sizeof(buffer))) > 0) {  
-                        if((ret = klogctl(2, buffer, sizeof(buffer))) > 0) {  
+                    if((ret = klogctl(9/*SYSLOG_ACTION_SIZE_UNREAD*/, buffer, sizeof(buffer))) > 0) {  
+                        if((ret = klogctl(2/*SYSLOG_ACTION_READ*/, buffer, sizeof(buffer))) > 0) {  
                             entry->entry.tid = 0;  
                             entry->entry.pid = getpid();  
                             /*priority*/  
@@ -330,7 +330,7 @@ static void readLogLines(log_device_t* devices)
                                 (void) processBuffer(dev, entry->entry); 
                             } 
                             */  
-                        printNextEntry(dev);  
+                        	  printNextEntry(dev);  
                         }  
                     }  
                 }
