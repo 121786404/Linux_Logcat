@@ -33,6 +33,8 @@ static int g_tail_lines = 0;
 
 #define LOG_FILE_DIR    "/dev/"
 
+#include <sys/klog.h>
+#define KERNEL_TAG "Kernel"
 
 struct queued_entry_t {
     union {
@@ -256,7 +258,7 @@ static void readLogLines(log_device_t* devices)
     int ret;
     int queued_lines = 0;
     bool sleep = false;
-
+    char buffer[256] = {0}; 
     int result;
     fd_set readset;
 
@@ -308,6 +310,29 @@ static void readLogLines(log_device_t* devices)
 
                     dev->enqueue(entry);
                     ++queued_lines;
+
+                    if((ret = klogctl(9, buffer, sizeof(buffer))) > 0) {  
+                        if((ret = klogctl(2, buffer, sizeof(buffer))) > 0) {  
+                            entry->entry.tid = 0;  
+                            entry->entry.pid = getpid();  
+                            /*priority*/  
+                            entry->entry.msg[0] = ANDROID_LOG_INFO;  
+                            /*tag*/  
+                            strcpy(entry->entry.msg+1, KERNEL_TAG);  
+                            /*message*/  
+                            strncpy(entry->entry.msg+1+sizeof(KERNEL_TAG), buffer, ret);  
+                            entry->entry.len = 1 + sizeof(KERNEL_TAG) + ret + 1;  
+                            entry->entry.msg[entry->entry.len] = '\0';  
+                            /* 
+                            if (g_printBinary) { 
+                                printBinary(dev, entry->entry); 
+                            } else { 
+                                (void) processBuffer(dev, entry->entry); 
+                            } 
+                            */  
+                        printNextEntry(dev);  
+                        }  
+                    }  
                 }
             }
 
